@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>K-Map and Gray Code Quiz</title>
+<style>
+:root{--bg:#F4F7FA;--card:#fff;--fg:#14202E;--mut:#5B6B7B;--line:#C9D3DD;--ac:#1F6FEB;--navy:#0B2545;--ok:#2F9E44;--okbg:#E3F5E7;--bad:#D6336C;--badbg:#FCE4EC;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0B1522;--card:#142235;--fg:#EAF0F6;--mut:#9FB1C4;--line:#2A4260;--ac:#5B9BFF;--navy:#0B2545;--ok:#51CF66;--okbg:#12301B;--bad:#FF6B9D;--badbg:#3A1626}}
+:root[data-theme="dark"]{--bg:#0B1522;--card:#142235;--fg:#EAF0F6;--mut:#9FB1C4;--line:#2A4260;--ac:#5B9BFF;--navy:#0B2545;--ok:#51CF66;--okbg:#12301B;--bad:#FF6B9D;--badbg:#3A1626}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.w{max-width:560px;margin:0 auto;padding:18px 16px 40px}
+h1{margin:0;font-size:30px;line-height:1.15}
+.hd{background:var(--navy);color:#fff;border-radius:16px;padding:20px;margin-bottom:16px}
+.hd p{margin:6px 0 0;color:#D6E4F5}
+button{font:inherit;color:inherit;cursor:pointer}
+.b{display:block;width:100%;border:2px solid var(--line);background:var(--card);border-radius:14px;padding:14px 16px;text-align:left;margin-bottom:10px;transition:transform .12s,border-color .12s}
+.b:active{transform:scale(.98)}
+.b.p{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:700;font-size:20px;text-align:center}
+.b small{display:block;color:var(--mut);font-size:14px}
+.b.p small{color:#E3EEFF}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.top .x{border:none;background:none;color:var(--ac);font-weight:600;padding:6px 0}
+.bar{flex:1;height:10px;border-radius:6px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ac);transition:width .3s}
+.q{font-size:21px;font-weight:700;margin:6px 0 14px}
+.b.ok{background:var(--okbg);border-color:var(--ok)}
+.b.no{background:var(--badbg);border-color:var(--bad);animation:sh .3s}
+@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.ex{background:var(--card);border-left:5px solid var(--ac);border-radius:8px;padding:10px 14px;margin:6px 0 14px}
+.sc{text-align:center;font-size:56px;font-weight:800;margin:16px 0 0;color:var(--ac)}
+.fc{perspective:900px;height:230px;margin-bottom:14px}
+.fi{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d;cursor:pointer}
+.fi.f{transform:rotateY(180deg)}
+.fs{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;font-size:21px;font-weight:600;box-sizing:border-box}
+.fa{background:var(--card);border:2px solid var(--line)}
+.fb{background:var(--ac);color:#fff;transform:rotateY(180deg)}
+.row{display:flex;gap:10px}.row .b{text-align:center;margin-bottom:0}
+.mt{position:relative;display:flex;justify-content:space-between;gap:56px}
+.mt>div{flex:1}
+.mt .b{padding:12px 10px;font-size:15.5px;text-align:center;margin-bottom:12px;min-height:58px;display:flex;align-items:center;justify-content:center}
+.mt .b.sel{border-color:var(--ac);background:var(--card);box-shadow:0 0 0 3px var(--ac)}
+.mt .b.dn{background:var(--okbg);border-color:var(--ok);pointer-events:none}
+#sv{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.cf{position:fixed;top:-12px;width:9px;height:14px;z-index:9;animation:fl 2.4s linear forwards}
+@keyframes fl{to{transform:translateY(105vh) rotate(540deg)}}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="w" id="app"></div>
+<script>
+var Q=[
+{q:"How many bits change between two consecutive Gray code numbers?",o:["1","2","3","It depends on the number"],a:0,e:"That is the defining property of Gray code: exactly one bit changes per step."},
+{q:"What is the Gray code of binary 110?",o:["101","111","011","100"],a:0,e:"G2 = 1, G1 = 1 ⊕ 1 = 0, G0 = 1 ⊕ 0 = 1, so the answer is 101."},
+{q:"Why are K-map labels written 00, 01, 11, 10?",o:["It looks neat","They follow Gray code, so neighbours differ by one bit","It is alphabetical order","It saves paper"],a:1,e:"Gray order makes neighbouring cells differ by one variable, so they can be grouped."},
+{q:"In a K-map, a group of 1s must contain how many cells?",o:["Any number you like","1, 2, 4, 8 (a power of 2)","Exactly 3","Only odd numbers"],a:1,e:"Groups are powers of 2. Bigger groups give simpler terms."},
+{q:"What is the main benefit of simplifying logic with a K-map?",o:["Fewer gates: lower cost and power","More gates","Longer wires","A bigger chip"],a:0,e:"Fewer gates mean lower cost, less power, smaller size and faster circuits."},
+{q:"Alarm = A·D + A·W. When does the alarm sound?",o:["When armed and the door or window is open","Only when disarmed","Only when the window is closed","Always"],a:0,e:"A·D or A·W: the system must be armed (A) and either the door (D) or window (W) triggered."},
+{q:"Which device uses a Gray-coded disc?",o:["Rotary encoder","Light bulb","Toaster","Speaker"],a:0,e:"Rotary encoders in robots and knobs use Gray code so a misread is off by at most one position."},
+{q:"Which IC is used to build a binary-to-Gray converter?",o:["7486 (XOR)","7404 (NOT) only","7432 (OR) only","7408 (AND) only"],a:0,e:"Gray bits are made with XOR gates, and the 7486 contains four of them."},
+{q:"In binary-to-Gray conversion, G1 equals:",o:["B2 ⊕ B1","B2 · B1","B1 + B0","B0"],a:0,e:"Keep the first bit, then XOR each bit with the bit before it."},
+{q:"A seven-segment decoder needs how many K-maps?",o:["One for each segment","Just one in total","None at all","Twelve"],a:0,e:"Each segment (a to g) has its own logic, and each one can be simplified with a K-map."}];
+var F=[["What is Gray code?","A binary code where only one bit changes between consecutive numbers."],["How do you convert binary to Gray?","Keep the first bit, then XOR each bit with the bit before it."],["Binary 101 in Gray?","111"],["What is a K-map?","A grid that simplifies Boolean expressions by grouping neighbouring 1s."],["Why do K-maps use 00, 01, 11, 10?","Gray order, so neighbouring cells differ by one variable."],["What group sizes are allowed?","1, 2, 4, 8 (powers of 2). Edges wrap around."],["Where is Gray code used?","Rotary encoders in robots, knobs and motors."],["Alarm = A·D + A·W means?","Armed, and the door or window is open."]];
+var M=[["Gray code","Only one bit changes per step"],["K-map","Groups 1s to simplify logic"],["Rotary encoder","Reads a Gray-coded disc"],["Binary 101","Gray 111"],["7486 IC","XOR gates for a converter"],["7-segment display","One K-map per segment"]];
+var app=document.getElementById("app");
+function sh(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function home(){app.innerHTML='<div class="hd"><h1>K-Map and Gray Code Quiz</h1><p>Scan, play, learn. Pick a mode.</p><p style="font-size:14px">By Bhoomi Ghatye · Vidyalankar Institute of Technology</p></div>'+
+'<button class="b p" id="s1">Start Quiz<small>10 questions</small></button>'+
+'<button class="b" id="s2"><b>Flashcards</b><small>Tap a card to flip it</small></button>'+
+'<button class="b" id="s3"><b>Match the Following</b><small>Tap a term, then its meaning</small></button>';
+document.getElementById("s1").onclick=quiz;document.getElementById("s2").onclick=flash;document.getElementById("s3").onclick=match}
+function tp(t,p){return '<div class="top"><button class="x" id="bk">← Menu</button><div class="bar"><i style="width:'+p+'%"></i></div><b>'+t+'</b></div>'}
+function quiz(){var qs=Q.slice(),i=0,sc=0;function show(){var q=qs[i],os=sh(q.o.map(function(t,k){return{t:t,ok:k==q.a}}));
+app.innerHTML=tp((i+1)+"/"+qs.length,i/qs.length*100)+'<div class="q">'+q.q+'</div><div id="os"></div><div id="ex"></div>';
+document.getElementById("bk").onclick=home;var box=document.getElementById("os"),done=false;
+os.forEach(function(o){var b=document.createElement("button");b.className="b";b.textContent=o.t;b.onclick=function(){if(done)return;done=true;
+if(o.ok){sc++;b.classList.add("ok")}else{b.classList.add("no");[].forEach.call(box.children,function(c,k){if(os[k].ok)c.classList.add("ok")})}
+document.getElementById("ex").innerHTML='<div class="ex">'+(o.ok?"Correct! ":"Not quite. ")+q.e+'</div><button class="b p" id="nx">'+(i==qs.length-1?"See my score":"Next question")+'</button>';
+document.getElementById("nx").onclick=function(){i++;i<qs.length?show():end()}};box.appendChild(b)})}
+function end(){var pc=Math.round(sc/qs.length*100);app.innerHTML='<div class="hd"><h1>Quiz complete</h1></div><div class="sc">'+sc+'/'+qs.length+'</div><p style="text-align:center;font-size:20px;font-weight:600">'+(pc>=80?"Excellent! You think like a logic designer.":pc>=50?"Good work. Try the flashcards to improve.":"Keep going. Flashcards will help.")+'</p><button class="b p" id="r1">Play again</button><button class="b" id="r2">Flashcards</button><button class="b" id="r3">Match the Following</button><button class="b" id="r4">Menu</button>';
+document.getElementById("r1").onclick=quiz;document.getElementById("r2").onclick=flash;document.getElementById("r3").onclick=match;document.getElementById("r4").onclick=home;if(pc>=70)conf()}show()}
+function flash(){var d=sh(F),i=0;function show(){app.innerHTML=tp((i+1)+"/"+d.length,(i+1)/d.length*100)+'<div class="fc"><div class="fi" id="fi"><div class="fs fa">'+d[i][0]+'</div><div class="fs fb">'+d[i][1]+'</div></div></div><p style="text-align:center;color:var(--mut);margin:0 0 14px">Tap the card to flip</p><div class="row"><button class="b" id="pv">Previous</button><button class="b p" id="nx">Next</button></div>';
+document.getElementById("bk").onclick=home;var fi=document.getElementById("fi");fi.onclick=function(){fi.classList.toggle("f")};
+document.getElementById("pv").onclick=function(){i=(i+d.length-1)%d.length;show()};document.getElementById("nx").onclick=function(){i=(i+1)%d.length;show()}}show()}
+function match(){var L=sh(M.map(function(m,k){return{t:m[0],k:k}})),R=sh(M.map(function(m,k){return{t:m[1],k:k}})),sel=null,n=0,lines=[];
+app.innerHTML=tp("0/"+M.length,0)+'<div class="q" style="font-size:18px">Tap a term on the left, then its match on the right.</div><div class="mt" id="mt"><svg id="sv"></svg><div id="lc"></div><div id="rc"></div></div><div id="msg"></div>';
+document.getElementById("bk").onclick=home;var mt=document.getElementById("mt"),sv=document.getElementById("sv");
+function pt(el,side){var a=el.getBoundingClientRect(),c=mt.getBoundingClientRect();return[(side?a.right:a.left)-c.left,a.top+a.height/2-c.top]}
+function draw(){sv.innerHTML="";lines.forEach(function(p){var a=pt(p[0],1),b=pt(p[1],0);sv.innerHTML+='<line x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" stroke="#2F9E44" stroke-width="4" stroke-linecap="round"/><circle cx="'+a[0]+'" cy="'+a[1]+'" r="5" fill="#2F9E44"/><circle cx="'+b[0]+'" cy="'+b[1]+'" r="5" fill="#2F9E44"/>'})}
+function mk(o,side,cont){var b=document.createElement("button");b.className="b";b.textContent=o.t;b.dataset.k=o.k;b.dataset.s=side;
+b.onclick=function(){if(side==0){[].forEach.call(document.querySelectorAll("#lc .b"),function(x){x.classList.remove("sel")});sel=b;b.classList.add("sel");return}
+if(!sel)return;if(sel.dataset.k==b.dataset.k){sel.classList.remove("sel");sel.classList.add("dn");b.classList.add("dn");lines.push([sel,b]);sel=null;n++;draw();
+document.querySelector(".bar i").style.width=n/M.length*100+"%";document.querySelector(".top b").textContent=n+"/"+M.length;
+if(n==M.length){document.getElementById("msg").innerHTML='<div class="ex">All matched! Great job.</div><button class="b p" id="m1">Take the Quiz</button>';document.getElementById("m1").onclick=quiz;conf()}}
+else{b.classList.add("no");setTimeout(function(){b.classList.remove("no")},400)}};cont.appendChild(b)}
+L.forEach(function(o){mk(o,0,document.getElementById("lc"))});R.forEach(function(o){mk(o,1,document.getElementById("rc"))});window.onresize=draw}
+function conf(){var c=["#1F6FEB","#E8590C","#2F9E44","#C2255C","#FFB000"];for(var i=0;i<46;i++){var s=document.createElement("span");s.className="cf";s.style.left=Math.random()*100+"vw";s.style.background=c[i%5];s.style.animationDelay=Math.random()*.6+"s";document.body.appendChild(s);setTimeout(function(e){e.remove()},3200,s)}}
+home();
+</script>
+</body>
+</html>
